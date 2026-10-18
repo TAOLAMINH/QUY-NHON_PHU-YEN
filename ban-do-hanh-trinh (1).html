@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bản đồ hành trình Quy Nhơn – Phú Yên 4 ngày</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#5577ff;--soft:#8aa0ff;--ink:#0a0a0a;--gray:#5a5a5a}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Manrope',system-ui,sans-serif;background:#fbf7ef}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+h2{font:600 clamp(26px,4vw,38px) 'Playfair Display',serif}
+/* Chỉ áp dụng trong #ban-do – không ảnh hưởng phần cũ. Dùng biến --blue/--ink/--gray đã có. */
+#ban-do { padding: 80px 0; background: #fbf7ef; color: var(--ink, #0a0a0a); font-family: 'Manrope', system-ui, sans-serif; scroll-margin-top: 70px; }
+#ban-do .jm-sub { color: var(--gray, #5a5a5a); margin: 8px 0 20px; }
+#ban-do .jm-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; }
+#ban-do .jm-tabs button { flex: 0 0 auto; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 2px solid var(--c, var(--blue, #5577ff)); background: #fff; color: var(--ink, #0a0a0a); font: 600 14px 'Manrope', sans-serif; cursor: pointer; }
+#ban-do .jm-tabs button[aria-pressed="true"] { background: var(--c, var(--blue, #5577ff)); color: #fff; }
+#ban-do .jm-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+#ban-do .jm-mapbox { position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 6px 24px rgba(0, 0, 0, .12); }
+#ban-do #jm-map { height: 560px; width: 100%; background: #dfe9ef; }
+#ban-do .jm-msg { position: absolute; z-index: 1000; left: 10px; right: 10px; bottom: 10px; background: #fff3cd; color: #5c4400; padding: 8px 12px; border-radius: 8px; font-size: 13px; }
+#ban-do .jm-side { max-height: 560px; overflow-y: auto; background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 6px 24px rgba(0, 0, 0, .08); }
+#ban-do .jm-sum h3 { font: 600 19px 'Playfair Display', serif; margin-bottom: 4px; }
+#ban-do .jm-sum p { font-size: 14px; color: var(--gray, #5a5a5a); margin-bottom: 8px; }
+#ban-do .jm-list { list-style: none; }
+#ban-do .jm-it { padding: 8px 0; border-top: 1px solid #eee; }
+#ban-do .jm-it[data-id] { cursor: pointer; }
+#ban-do .jm-it[data-id]:hover, #ban-do .jm-it[data-id]:focus-visible { background: #f4f6ff; outline: none; }
+#ban-do .jm-leg { font-size: 12.5px; color: var(--blue, #5577ff); font-weight: 600; margin-bottom: 4px; }
+#ban-do .jm-row { display: flex; gap: 10px; }
+#ban-do .jm-row i, #ban-do .jm-legend i { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-style: normal; font-size: 13px; }
+#ban-do .jm-row span { color: var(--gray, #5a5a5a); font-size: 13px; margin-left: 4px; }
+#ban-do .jm-row p { font-size: 13.5px; color: var(--gray, #5a5a5a); margin-top: 2px; }
+#ban-do .jm-soft .jm-row i { background: transparent !important; border: 2px dashed #aaa; }
+#ban-do .jm-tag { font-size: 11px; font-style: normal; background: #eee; border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
+#ban-do .jm-warn { color: #a05a00 !important; }
+#ban-do .jm-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 16px; font-size: 13px; }
+#ban-do .jm-legend li { display: flex; align-items: center; gap: 6px; }
+#ban-do .jm-legend i.jm-dash { background: transparent; border: 2px dashed #aaa; }
+#ban-do .jm-note { margin-top: 10px; font-size: 12.5px; color: var(--gray, #5a5a5a); }
+/* marker (Leaflet chèn vào ngoài #ban-do nên dùng .jm-pin) */
+.jm-pin { position: relative; }
+.jm-pin span { width: 30px; height: 30px; border-radius: 50%; border: 3px solid; color: #fff; display: grid; place-items: center; font-size: 14px; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+.jm-pin em { position: absolute; top: -8px; right: -8px; min-width: 16px; height: 16px; border-radius: 8px; background: #fff; color: #111; font: 700 10px/16px sans-serif; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, .4); }
+.jm-pop { font: 13px/1.45 'Manrope', sans-serif; max-width: 230px; }
+@media (max-width: 860px) {
+  #ban-do { padding: 56px 0; }
+  #ban-do .jm-grid { grid-template-columns: 1fr; }
+  #ban-do #jm-map { height: 62vh; min-height: 340px; }
+  #ban-do .jm-side { max-height: none; }
+}
+#ban-do{min-height:100vh}
+</style></head><body>
+<section class="journey" id="ban-do"><div class="wrap">
+<h2>BẢN ĐỒ HÀNH TRÌNH</h2>
+<p class="jm-sub">Khám phá cung đường Quy Nhơn – Phú Yên qua 4 ngày. Chọn một ngày, rồi nhấn vào từng điểm trong danh sách để bản đồ bay tới đó.</p>
+<div id="jm-root"></div></div></section>
+<script>
+/* DỮ LIỆU BẢN ĐỒ HÀNH TRÌNH – sửa tại đây, không cần sửa map.js
+ * ll = [vĩ độ, kinh độ]. Mục không có ll = không vẽ lên bản đồ (chưa xác định / tham khảo).
+ * QUAN TRỌNG: toàn bộ tọa độ dưới đây là ƯỚC TÍNH BAN ĐẦU, CHƯA ĐƯỢC XÁC MINH bằng dữ liệu bản đồ.
+ * Hãy kiểm tra từng điểm (nhấn marker → mở Google Maps/OSM), sửa ll rồi đặt COORDS_VERIFIED = true.
+ * ref = số liệu dự kiến từ lịch trình gốc (chỉ để đối chiếu). go = khung giờ di chuyển tới điểm này.
+ * tag:'tbd' = chưa xác định (không tự điền tên cơ sở); tag:'opt' = gợi ý tham khảo, không bắt buộc. */
+window.COORDS_VERIFIED = false;
+(function () {
+  const QN = [13.7765, 109.2240]; // ĐIỂM TẠM: trung tâm Quy Nhơn (khách sạn chưa xác định)
+  const TH = [13.0900, 109.3160]; // ĐIỂM TẠM: trung tâm Tuy Hòa (khách sạn chưa xác định)
+  const hotelQN = (id, n, t, d, go) => ({ id, n, type: 'stay', t, d, go, ll: QN, tmp: 1 });
+  const hotelTH = (id, n, t, d, go) => ({ id, n, type: 'stay', t, d, go, ll: TH, tmp: 1 });
+  window.JOURNEY = { days: [
+    { title: 'Khởi hành đến Quy Nhơn', items: [
+      { id: 'd1-hcm', n: 'Bay từ TP.HCM', type: 'air', t: '09:00', d: 'Thời gian bay dự kiến 1 giờ 20 phút.' },
+      { id: 'd1-uih', n: 'Sân bay Phù Cát', type: 'air', t: '~10:20', d: 'Hạ cánh, đón xe trung chuyển 15 hoặc 30 chỗ vào Quy Nhơn.', ll: [13.9550, 109.0420] },
+      { id: 'd1-r1', n: 'Nhà hàng (1) – ăn trưa', type: 'food', tag: 'tbd', t: '12:00–13:45' },
+      hotelQN('d1-h', 'Khách sạn (2) – điểm tạm: trung tâm Quy Nhơn', '13:45–14:00', 'Check-in, nghỉ ngơi. Chưa chọn khách sạn.', '11:00–12:00', ),
+      { id: 'd1-hr', n: 'Bãi đá Hoàng Hậu (Ghềnh Ráng)', type: 'spot', t: '16:45 trở đi', go: '16:30–16:45', ll: [13.7432, 109.2142], d: 'Tham quan, chụp ảnh, nghe thuyết minh.', warn: 'Lịch gốc có mốc 16:45–17:00 "tập trung đoàn, đi ăn tối" chồng lấn với giờ tham quan – cần xác nhận.' },
+      { id: 'd1-hmt', n: 'Khu mộ Hàn Mặc Tử', type: 'spot', t: '16:45 trở đi', ll: [13.7440, 109.2124], d: 'Thăm mộ thi sĩ Hàn Mặc Tử.' },
+      { id: 'd1-r3', n: 'Nhà hàng (3) – gà chỉ', type: 'food', tag: 'tbd', t: '17:00–18:30' },
+      hotelQN('d1-h2', 'Về khách sạn (điểm tạm)', '18:30–18:45', '', '18:30–18:45'),
+      { id: 'd1-free', n: 'Tối tự do: Quảng trường Nguyễn Tất Thành, chợ đêm, đường Xuân Diệu', type: 'spot', tag: 'opt', t: 'Buổi tối', d: 'Gợi ý tham khảo, không bắt buộc.' }
+    ] },
+    { title: 'Quy Nhơn – Kỳ Co – Eo Gió', items: [
+      hotelQN('d2-h', 'Khách sạn (điểm tạm) – ăn sáng, xuất phát', '07:00–08:00', 'Ăn sáng tại khách sạn hoặc quán bánh canh ghẹ (4 – chưa xác định); 07:45 chuẩn bị xe, hành lý.'),
+      { id: 'd2-eg', n: 'Eo Gió', type: 'spot', t: '09:00–11:00', go: '08:00–09:00', ref: '30 km', ll: [13.8115, 109.3085], d: 'Vịnh Eo Gió, Giếng Tiên, con đường sách, tịnh xá Ngọc Hòa.' },
+      { id: 'd2-kc', n: 'Bãi biển Kỳ Co', type: 'spot', t: '11:30–16:00', go: '11:00–11:30', ref: '7 km', ll: [13.7960, 109.3330], d: 'Ăn trưa (5 – chưa xác định cơ sở) 11:30–13:30; cầu tình yêu, suối nước ngọt, hang động, tắm biển 13:30–16:00.' },
+      { id: 'd2-nl', n: 'Làng chài Nhơn Lý', type: 'spot', t: '16:30–17:30', go: '16:00–16:30', ll: [13.8240, 109.3250], d: 'Ngắm hoàng hôn, chụp ảnh với thành cổ, tham quan Ghềnh Nam.', warn: 'Lịch gốc có thêm mốc 15:40–16:30 cho chặng này, chồng lấn với hoạt động tại Kỳ Co – cần xác nhận.' },
+      { id: 'd2-bx', n: 'Bãi Xếp (khu hải sản)', type: 'food', t: '19:00–20:30', go: '17:30–18:30 (về trung tâm, rồi 19:00 ăn tối)', ll: [13.7520, 109.2275], d: 'Ăn hải sản – nhà hàng (6) chưa xác định.' },
+      hotelQN('d2-h2', 'Về khách sạn (điểm tạm)', '20:30–21:00', '', '20:30–21:00')
+    ] },
+    { title: 'Quy Nhơn – Phú Yên', items: [
+      hotelQN('d3-h', 'Khách sạn (điểm tạm) – xuất phát', '07:45–08:00', 'Ăn bún rạm (7 – chưa xác định) 07:00–07:45, rồi lấy hành lý.'),
+      { id: 'd3-ml', n: 'Nhà thờ Mằng Lăng', type: 'spot', t: '09:15–09:45', go: '08:00–09:15', ref: '65 km', ll: [13.3015, 109.2170], d: 'Chụp ảnh, hang đá, tìm hiểu lịch sử.', warn: '65 km trong 75 phút có thể thấp hơn thực tế – đối chiếu với số liệu định tuyến.' },
+      { id: 'd3-dd', n: 'Gành Đá Đĩa', type: 'spot', t: '10:00–11:30', go: '09:45–10:00', ref: '10 km', ll: [13.3420, 109.2960], d: 'Cấu trúc đá bazan.' },
+      { id: 'd3-ol', n: 'Đầm Ô Loan', type: 'spot', t: '11:45–13:30', go: '11:30–11:45', ref: '12 km', ll: [13.2350, 109.2920], d: 'Ăn trưa hải sản, sò huyết (8 – nhà hàng chưa xác định).' },
+      { id: 'd3-tl', n: 'Chùa Thanh Lương', type: 'spot', t: '14:15–15:00', go: '13:30–14:15', ref: '25 km', ll: [13.1400, 109.3330], d: 'Kiến trúc san hô, gáo dừa; tượng Phật dưới nước.' },
+      { id: 'd3-np', n: 'Tháp Nghinh Phong', type: 'spot', t: '15:30–16:00', go: '15:00–15:30', ref: '12 km', ll: [13.0795, 109.3290], d: 'Tượng cá ngừ, ven biển Tuy Hòa.' },
+      hotelTH('d3-h2', 'Khách sạn (9) – điểm tạm: trung tâm Tuy Hòa', '16:00–16:30', 'Nhận phòng, nghỉ ngơi. Chưa chọn khách sạn.', '16:00–16:30'),
+      { id: 'd3-r10', n: 'Nhà hàng (10) – mắt cá ngừ đại dương', type: 'food', tag: 'tbd', t: '19:00–20:30', d: 'Sau đó về khách sạn 20:30–20:45.' }
+    ] },
+    { title: 'Mũi Điện – Vũng Rô – Sân bay Tuy Hòa', items: [
+      hotelTH('d4-h', 'Khách sạn (điểm tạm) – xuất phát', '07:45–08:00', 'Ăn sáng tại quán (11 – chưa xác định) 07:00–07:45; chuẩn bị hành lý, xe.'),
+      { id: 'd4-bt', n: 'Bãi Tiên', type: 'spot', t: '09:15–09:30', go: '08:00–09:15', ref: '30–32 km', ll: [12.9200, 109.4600], d: 'Ngắm biển, chụp ảnh.' },
+      { id: 'd4-md', n: 'Hải đăng Mũi Điện', type: 'spot', t: '10:00–12:30', go: '09:30–10:00', ref: '3–5 km', ll: [12.8780, 109.4580], d: 'Đi bộ theo đường mòn, ngắm cảnh, chụp ảnh.' },
+      { id: 'd4-bm', n: 'Bãi Môn', type: 'spot', t: '10:00–12:30', ll: [12.8830, 109.4640], d: 'Cùng khung giờ tham quan Mũi Điện.' },
+      { id: 'd4-vr', n: 'Vịnh Vũng Rô', type: 'spot', t: '12:45–14:00', go: '12:30–12:45', ref: '5–7 km', ll: [12.8560, 109.4260], d: 'Ăn trưa nhà bè (12 – chưa xác định).' },
+      { id: 'd4-bk', n: 'Bến tàu Không số Vũng Rô', type: 'spot', t: '14:00–15:00', ll: [12.8550, 109.4090], d: 'Hoặc chụp ảnh quanh vịnh, tùy thời gian và chuyến bay.' },
+      hotelTH('d4-h2', 'Khách sạn (điểm tạm) – lấy hành lý, trả xe máy', '16:45–17:45', '', '15:00–16:45'),
+      { id: 'd4-ap', n: 'Sân bay Tuy Hòa', type: 'end', t: '18:15', go: '17:45–18:15', ref: '7 km', ll: [13.0496, 109.3342], d: 'Làm thủ tục chuyến bay 19:30.' }
+    ] }
+  ] };
+})();
+</script><script>
+/* Bản đồ hành trình – Leaflet + OpenStreetMap + OSRM (không cần API key). Tải lazy khi cuộn tới mục #ban-do. */
+(function () {
+  const root = document.getElementById('jm-root'), J = window.JOURNEY;
+  if (!root || !J) return;
+  const COL = ['#d6483b', '#e0902b', '#2f9e6b', '#5577ff'];
+  const TYPE = {
+    air: ['#5577ff', '✈', 'Sân bay / xuất phát'], spot: ['#d6483b', '★', 'Điểm tham quan'],
+    food: ['#e0902b', '🍴', 'Ăn uống'], stay: ['#2f9e6b', '⌂', 'Khách sạn (điểm tạm)'], end: ['#1d1d1d', '⚑', 'Điểm kết thúc']
+  };
+  const km1 = x => x.toFixed(1).replace('.', ',');
+  const hav = (a, b) => { const r = Math.PI / 180, dLa = (b[0] - a[0]) * r, dLo = (b[1] - a[1]) * r;
+    const h = Math.sin(dLa / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin(dLo / 2) ** 2;
+    return 12742 * Math.asin(Math.sqrt(h)); };
+
+  root.innerHTML = `
+    <div class="jm-tabs" id="jm-tabs"></div>
+    <div class="jm-grid">
+      <div class="jm-mapbox"><div id="jm-map" role="application" aria-label="Bản đồ hành trình"></div><div class="jm-msg" id="jm-msg" hidden></div></div>
+      <aside class="jm-side"><div class="jm-sum" id="jm-sum"></div><ol class="jm-list" id="jm-list"></ol></aside>
+    </div>
+    <ul class="jm-legend" id="jm-legend"></ul>
+    <p class="jm-note" id="jm-note"></p>`;
+  const $ = id => document.getElementById(id);
+  $('jm-legend').innerHTML = Object.values(TYPE).map(t => `<li><i style="background:${t[0]}">${t[1]}</i>${t[2]}</li>`).join('') +
+    '<li><i class="jm-dash"></i>Chưa xác định / gợi ý (không vẽ trên bản đồ)</li>';
+  $('jm-note').innerHTML = (window.COORDS_VERIFIED ? '' : '<b>Lưu ý:</b> vị trí marker là ước tính ban đầu, đang chờ xác minh. ') +
+    'Khách sạn và nhà hàng chưa chọn nên chỉ có điểm tạm ở trung tâm thành phố. Đường nét liền = tuyến đường bộ (OSRM, hồ sơ ô tô; xe máy có thể khác); nét đứt = đường chim bay tham khảo khi không tải được định tuyến.';
+
+  const days = J.days.map((d, i) => ({ i, title: d.title, items: d.items, pts: d.items.filter(x => x.ll), route: null, group: null, line: null }));
+  let L, map, cur = 0;
+  const tabs = $('jm-tabs');
+  tabs.innerHTML = '<button data-d="0" aria-pressed="true">Toàn hành trình</button>' + days.map(d => `<button data-d="${d.i + 1}" aria-pressed="false" style="--c:${COL[d.i]}">Ngày ${d.i + 1}</button>`).join('');
+  tabs.addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(+b.dataset.d); });
+
+  const msg = t => { const m = $('jm-msg'); m.hidden = !t; m.textContent = t || ''; };
+  const loadLeaflet = () => new Promise((ok, no) => {
+    if (window.L) return ok();
+    const c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css'; document.head.appendChild(c);
+    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s);
+  });
+
+  async function getRoute(d) {
+    const u = 'https://router.project-osrm.org/route/v1/driving/' + d.pts.map(p => p.ll[1] + ',' + p.ll[0]).join(';') + '?overview=full&geometries=geojson';
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), 12000);
+    try {
+      const r = await fetch(u, { signal: ac.signal }); if (!r.ok) throw 0;
+      const j = await r.json(); if (j.code !== 'Ok' || !j.routes[0]) throw 0;
+      const rt = j.routes[0];
+      return { src: 'osrm', geo: rt.geometry.coordinates.map(c => [c[1], c[0]]), legs: rt.legs.map(l => ({ km: l.distance / 1000, min: l.duration / 60 })) };
+    } catch (e) { return null; } finally { clearTimeout(to); }
+  }
+
+  function buildDay(d, rt) {
+    d.route = rt || { src: 'air', geo: d.pts.map(p => p.ll), legs: d.pts.slice(1).map((p, k) => ({ km: hav(d.pts[k].ll, p.ll), min: 0 })) };
+    d.pts.forEach((p, k) => { p.leg = k ? Object.assign({ air: hav(d.pts[k - 1].ll, p.ll), src: d.route.src }, d.route.legs[k - 1]) : null; });
+    d.line = L.polyline(d.route.geo, { color: COL[d.i], weight: 5, opacity: .85, dashArray: d.route.src === 'osrm' ? null : '8 8' });
+    d.group = L.layerGroup([d.line]);
+    d.pts.forEach((p, k) => {
+      const t = TYPE[p.type], ic = L.divIcon({ className: 'jm-pin', iconSize: [30, 30], iconAnchor: [15, 15],
+        html: `<span style="background:${t[0]};border-color:${COL[d.i]}">${t[1]}</span><em>${k + 1}</em>` });
+      p.mk = L.marker(p.ll, { icon: ic, title: p.n }).bindPopup(popup(d, p));
+      d.group.addLayer(p.mk);
+    });
+  }
+  const legTxt = p => !p.leg ? '' : (p.leg.src === 'osrm' ? 'Đường bộ ' : 'Chim bay (tham khảo) ') + km1(p.leg.km) + ' km' +
+    (p.leg.min ? ' · ~' + Math.round(p.leg.min) + ' phút' : '') + (p.leg.src === 'osrm' ? ' · chim bay ' + km1(p.leg.air) + ' km' : '');
+  function popup(d, p) {
+    return `<div class="jm-pop"><b>${p.n}</b><br>Ngày ${d.i + 1} · ${p.t}<br>${p.d || ''}` +
+      (p.leg ? `<br><small>Từ điểm trước: ${legTxt(p)}${p.ref ? ' (lịch trình gốc: ' + p.ref + ')' : ''}</small>` : '') +
+      '<br><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + p.ll[0] + ',' + p.ll[1] + '">Mở trong Google Maps</a>' +
+      (p.tmp ? '<br><small>Điểm tạm – cơ sở chưa xác định.</small>' : '') +
+      (window.COORDS_VERIFIED ? '' : '<br><small>Tọa độ ước tính, chưa xác minh.</small>') + '</div>';
+  }
+
+  function renderList(d) {
+    const sum = d.pts.length && d.pts[1] ? d.pts.reduce((s, p) => s + (p.leg ? p.leg.km : 0), 0) : 0;
+    $('jm-sum').innerHTML = `<h3>Ngày ${d.i + 1}: ${d.title}</h3>` + (d.route ? `<p>Tổng di chuyển: <b>${km1(sum)} km</b> (${d.route.src === 'osrm' ? 'đường bộ' : 'chim bay – số liệu tham khảo'})</p>` : '<p>Đang tính tuyến đường…</p>');
+    $('jm-list').innerHTML = d.items.map(p => {
+      const cls = p.ll ? '' : ' jm-soft';
+      return `<li class="jm-it${cls}" ${p.ll ? `data-id="${p.id}" tabindex="0"` : ''}>` +
+        (p.go ? `<div class="jm-leg">↳ ${p.go}${p.leg ? ' · ' + legTxt(p) : ''}${p.ref ? ` <small>(gốc: ${p.ref})</small>` : ''}</div>` : '') +
+        `<div class="jm-row"><i style="background:${TYPE[p.type][0]}">${TYPE[p.type][1]}</i><div><b>${p.n}</b> <span>${p.t || ''}</span>` +
+        (p.tag ? `<em class="jm-tag">${p.tag === 'tbd' ? 'Chưa xác định' : 'Tham khảo'}</em>` : '') +
+        (p.d ? `<p>${p.d}</p>` : '') + (p.warn ? `<p class="jm-warn">⚠ ${p.warn}</p>` : '') + '</div></div></li>';
+    }).join('');
+  }
+
+  async function show(n) {
+    cur = n;
+    [...tabs.children].forEach(b => b.setAttribute('aria-pressed', +b.dataset.d === n));
+    if (n) renderList(days[n - 1]); else { $('jm-sum').innerHTML = '<h3>Toàn hành trình 4 ngày</h3><p>Chọn một ngày để xem từng chặng.</p>'; $('jm-list').innerHTML = ''; }
+    if (!map) return;
+    const todo = days.filter(d => !d.route && (n === 0 || d.i === n - 1));
+    if (todo.length) msg('Đang tải tuyến đường…');
+    await Promise.all(todo.map(async d => { const rt = await getRoute(d); buildDay(d, rt); }));
+    if (todo.some(d => d.route.src !== 'osrm')) msg('Không tải được dịch vụ định tuyến. Đang hiển thị đường chim bay (số liệu tham khảo).'); else msg('');
+    if (cur !== n) return;
+    days.forEach(d => { if (!d.group) return; const on = n === 0 || d.i === n - 1;
+      d.group.addTo(map); d.line.setStyle({ opacity: on ? .9 : .12, weight: on ? 5 : 3 });
+      d.pts.forEach(p => { p.mk.setOpacity(on ? 1 : 0); p.mk.options.interactive = on; }); });
+    if (n) { renderList(days[n - 1]); map.flyToBounds(days[n - 1].line.getBounds().pad(.15), { duration: .8 }); }
+    else map.flyToBounds(L.featureGroup(days.filter(d => d.line).map(d => d.line)).getBounds().pad(.1), { duration: .8 });
+  }
+
+  $('jm-list').addEventListener('click', e => {
+    const li = e.target.closest('[data-id]'); if (!li || !cur) return;
+    const p = days[cur - 1].pts.find(x => x.id === li.dataset.id); if (!p || !p.mk) return;
+    map.flyTo(p.ll, 14, { duration: .8 }); p.mk.openPopup();
+    $('jm-map').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  $('jm-list').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.click(); });
+
+  async function init() {
+    try { await loadLeaflet(); } catch (e) { msg('Không tải được thư viện bản đồ. Vui lòng kiểm tra kết nối mạng rồi tải lại trang.'); return; }
+    L = window.L;
+    map = L.map('jm-map', { scrollWheelZoom: true, minZoom: 2, worldCopyJump: true }).setView([13.4, 109.2], 8);
+    const esri = s => 'https://server.arcgisonline.com/ArcGIS/rest/services/' + s + '/MapServer/tile/{z}/{y}/{x}';
+    const base = {
+      'Bản đồ đường': L.tileLayer(esri('World_Street_Map'), { maxZoom: 19, attribution: 'Tiles © Esri, HERE, Garmin, OpenStreetMap contributors' }),
+      'Vệ tinh': L.tileLayer(esri('World_Imagery'), { maxZoom: 19, attribution: 'Tiles © Esri, Maxar, Earthstar Geographics' }),
+      'Bản đồ sáng': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 19, attribution: '© OpenStreetMap contributors © CARTO' })
+    };
+    const names = Object.keys(base); let bi = 0, errs = 0;
+    base[names[0]].addTo(map);
+    L.control.layers(base, null, { position: 'topright' }).addTo(map);
+    names.forEach((nm, k) => base[nm].on('tileerror', () => {
+      if (map.hasLayer(base[nm]) && ++errs === 6 && nm !== 'Vệ tinh') {
+        map.removeLayer(base[nm]); bi = (k + 1) % names.length; base[names[bi]].addTo(map); errs = 0;
+        msg('Nguồn bản đồ trước không tải được, đã tự chuyển sang "' + names[bi] + '".');
+      } else if (errs === 6) { msg('Bản đồ không tải được. Vui lòng kiểm tra kết nối mạng.'); }
+    }));
+    map.on('baselayerchange', () => { errs = 0; msg(''); });
+    L.control.scale({ imperial: false }).addTo(map);
+    show(cur);
+  }
+  show(0);
+  let started = false; const go = () => { if (!started) { started = true; init(); } };
+  if (location.hash === '#ban-do' || !('IntersectionObserver' in window)) go();
+  else new IntersectionObserver((es, o) => { if (es.some(e => e.isIntersecting)) { o.disconnect(); go(); } }, { rootMargin: '300px' }).observe(root);
+  window.addEventListener('hashchange', () => { if (location.hash === '#ban-do') go(); });
+})();
+</script></body></html>
